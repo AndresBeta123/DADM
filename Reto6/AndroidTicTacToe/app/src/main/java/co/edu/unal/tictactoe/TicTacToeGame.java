@@ -189,6 +189,13 @@ public class TicTacToeGame {
         }
         return isOpen;
     }
+    public char[] getBoardState() {
+        return mBoard;
+    }
+
+    public void setBoardState(char[] mBoard) {
+        this.mBoard = mBoard;
+    }
     /**
      * @param args
      */

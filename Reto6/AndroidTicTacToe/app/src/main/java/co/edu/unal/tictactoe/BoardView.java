@@ -20,7 +20,6 @@ public class BoardView extends View {
     public void setGame(TicTacToeGame game) {
         mGame = game;
     }
-
     public int getBoardCellWidth() {
         return getWidth() / 3;
     }

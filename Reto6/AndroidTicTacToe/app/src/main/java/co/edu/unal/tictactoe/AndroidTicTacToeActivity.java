@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -29,14 +30,14 @@ public class AndroidTicTacToeActivity extends Activity {
     private boolean  mGameOver;
     private int ties,hWins,aWins;
     static final int DIALOG_DIFFICULTY_ID = 0;
-    static final int DIALOG_QUIT_ID = 1;
+    static final int DIALOG_RESET_ID = 1;
     static final int ABOUT_ID = 2;
     private BoardView mBoardView;
     MediaPlayer mHumanMediaPlayer;
     MediaPlayer mHumanMediaPlayerError;
     MediaPlayer mComputerMediaPlayer;
-    private char Turno;
-
+    private char turno;
+    private SharedPreferences mPrefs;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,14 +55,34 @@ public class AndroidTicTacToeActivity extends Activity {
         aWins = 0;
         playerRandom = new Random();
 
+
         tiesText = findViewById(R.id.ties);
         hWinsText = findViewById(R.id.human);
         aWinsText = findViewById(R.id.android);
         mInfoTextView = (TextView) findViewById(R.id.information);
 
-        mGame = new TicTacToeGame();
+        mPrefs = getSharedPreferences("ttt_prefs", MODE_PRIVATE);
+        hWins = mPrefs.getInt("hWins", 0);
+        aWins = mPrefs.getInt("aWins", 0);
+        ties = mPrefs.getInt("ties", 0);
 
-        startNewGame();
+
+        if (savedInstanceState == null) {
+            startNewGame();
+        }
+        else {
+        // Restore the game's state
+            mGame.setBoardState(savedInstanceState.getCharArray("board"));
+            mGameOver = savedInstanceState.getBoolean("mGameOver");
+            mInfoTextView.setText(savedInstanceState.getCharSequence("info"));
+            hWins = savedInstanceState.getInt("hWins");
+            aWins = savedInstanceState.getInt("aWins");
+            ties = savedInstanceState.getInt("ties");
+            turno = savedInstanceState.getChar("turno");
+        }
+
+        displayScores();
+
     }
 
     // Set up the game board.
@@ -121,19 +142,19 @@ public class AndroidTicTacToeActivity extends Activity {
                             mGameOver = true;
                             ties++;
                             mInfoTextView.setText(R.string.result_tie);
-                            tiesText.setText(R.string.result_tie);
+                            tiesText.setText(R.string.ties);
                             tiesText.append(String.valueOf(ties));
                         } else if (winner == 2) {
                             mGameOver = true;
                             hWins++;
                             mInfoTextView.setText(R.string.result_human_wins);
-                            hWinsText.setText(R.string.result_human_wins);
+                            hWinsText.setText(R.string.human);
                             hWinsText.append(String.valueOf(hWins));
                         } else {
                             mGameOver = true;
                             aWins++;
                             mInfoTextView.setText(R.string.result_computer_wins);
-                            aWinsText.setText(R.string.result_computer_wins);
+                            aWinsText.setText(R.string.computer);
                             aWinsText.append(String.valueOf(aWins));
                         }
                     }
@@ -182,7 +203,7 @@ public class AndroidTicTacToeActivity extends Activity {
             showDialog(DIALOG_DIFFICULTY_ID);
             return true;
         } else if (itemId == R.id.quit) {
-            showDialog(DIALOG_QUIT_ID);
+            showDialog(DIALOG_RESET_ID);
             return true;
         }/*else if (itemId == R.id.about) {
             showDialog(ABOUT_ID);
@@ -223,17 +244,19 @@ public class AndroidTicTacToeActivity extends Activity {
                         });
                 dialog = builder.create();
                 break;
-            case DIALOG_QUIT_ID:
-                // Create the quit confirmation dialog
-                builder.setMessage(R.string.quit_question)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                AndroidTicTacToeActivity.this.finish();
-                            }
-                        })
-                        .setNegativeButton(R.string.no, null);
-                dialog = builder.create();
+            case DIALOG_RESET_ID:
+                // Reset
+                hWins = 0;
+                aWins = 0;
+                ties = 0;
+
+                SharedPreferences.Editor se = mPrefs.edit();
+                se.putInt("hWins", hWins);
+                se.putInt("aWins", aWins);
+                se.putInt("ties", ties);
+                se.commit();
+
+                displayScores();
                 break;
            /* case ABOUT_ID:
                 builder = new AlertDialog.Builder(this);
@@ -252,7 +275,7 @@ public class AndroidTicTacToeActivity extends Activity {
     protected void onResume() {
         super.onResume();
         mHumanMediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.sword);
-        mHumanMediaPlayerError = MediaPlayer.create(getApplicationContext(), R.raw.fail);
+        mHumanMediaPlayerError = MediaPlayer.create(getApplicationContext(), R.raw.shield);
         mComputerMediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.arrow);
     }
     @Override
@@ -262,13 +285,57 @@ public class AndroidTicTacToeActivity extends Activity {
         mHumanMediaPlayerError.release();
         mComputerMediaPlayer.release();
     }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putCharArray("board", mGame.getBoardState());
+        outState.putBoolean("mGameOver", mGameOver);
+        outState.putInt("hWins", Integer.valueOf(hWins));
+        outState.putInt("aWins", Integer.valueOf(aWins));
+        outState.putInt("ties", Integer.valueOf(ties));
+        outState.putCharSequence("info", mInfoTextView.getText());
+        outState.putChar("turno", turno);
+    }
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mGame.setBoardState(savedInstanceState.getCharArray("board"));
+        mGameOver = savedInstanceState.getBoolean("mGameOver");
+        mInfoTextView.setText(savedInstanceState.getCharSequence("info"));
+        hWins = savedInstanceState.getInt("hWins");
+        aWins = savedInstanceState.getInt("aWins");
+        ties = savedInstanceState.getInt("ties");
+        turno = savedInstanceState.getChar("turno");
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+// Save the current scores
+        SharedPreferences.Editor ed = mPrefs.edit();
+        ed.putInt("hWins", hWins);
+        ed.putInt("aWins", aWins);
+        ed.putInt("ties", ties);
+        ed.commit();
+    }
 
-
+    private void displayScores() {
+        hWinsText.setText(R.string.human);
+        hWinsText.append(" ");
+        hWinsText.append(Integer.toString(hWins));
+        aWinsText.setText(R.string.computer);
+        aWinsText.append(" ");
+        aWinsText.append(Integer.toString(aWins));
+        tiesText.setText(R.string.ties);
+        tiesText.append(" ");
+        tiesText.append(Integer.toString(ties));
+    }
     public char getTurno() {
-        return Turno;
+        return turno;
     }
 
-    public void setTurno(char turno) {
-        Turno = turno;
+    public void setTurno(char Rturno) {
+        turno = Rturno;
     }
+
+
 }

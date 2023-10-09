@@ -6,8 +6,11 @@
     <string name="turn_human">Your turn.</string>
     <string name="turn_computer">Android\'s turn.</string>
     <string name="result_tie">It\'s a tie.</string>
+    <string name="ties">Ties: </string>
     <string name="result_human_wins">You won!</string>
-    <string name="result_computer_wins">Android won!</string>
+    <string name="human">Human: </string>
+    <string name="result_computer_wins">Computer won!</string>
+    <string name="computer">Computer: </string>
     <string name="difficulty_choose">Escojer dificultad</string>
     <string name="difficulty_easy">Dificultad facil</string>
     <string name="difficulty_harder">Dificultad Dificil</string>
