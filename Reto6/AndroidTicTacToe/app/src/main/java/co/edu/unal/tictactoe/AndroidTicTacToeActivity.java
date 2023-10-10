@@ -202,7 +202,7 @@ public class AndroidTicTacToeActivity extends Activity {
         } else if (itemId == R.id.ai_difficulty) {
             showDialog(DIALOG_DIFFICULTY_ID);
             return true;
-        } else if (itemId == R.id.quit) {
+        } else if (itemId == R.id.reset_score) {
             showDialog(DIALOG_RESET_ID);
             return true;
         }/*else if (itemId == R.id.about) {
