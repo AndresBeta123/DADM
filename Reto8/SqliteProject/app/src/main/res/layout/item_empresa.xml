@@ -12,6 +12,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:textColorHint="@color/white"
+        android:textColorHighlight="@color/white"
         android:textStyle="bold"
         android:textColor="@android:color/black"/>
 
@@ -21,6 +23,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
+        android:textColorHint="@color/white"
+        android:textColorHighlight="@color/white"
         android:textStyle="bold"
         android:textColor="@android:color/black"
         android:layout_marginStart="16dp"/>
